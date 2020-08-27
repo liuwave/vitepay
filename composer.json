@@ -1,0 +1,46 @@
+{
+  "name": "vitepay/core",
+  "description": "一个thinkphp 6 的多网关支付框架。",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "thinkphp 6",
+    "支付",
+    "pay",
+    "vitepay",
+    "merchant"
+  ],
+  "authors": [
+    {
+      "name": "liuwave",
+      "email": "liuwave@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.1.0",
+    "topthink/framework": "^6.0",
+    "symfony/options-resolver": "^3.3",
+    "php-http/guzzle6-adapter": "^2.0",
+    "nesbot/carbon": "^2.28",
+    "moneyphp/money": "^3.3",
+    "php-http/message": "^1.8"
+  },
+  "autoload": {
+    "psr-4": {
+      "vitepay\\": "src/"
+    },
+    "files": [
+      "src/core/common.php"
+    ]
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "vitepay\\Service"
+      ],
+      "config": {
+        "vitepay": "src/core/config.php"
+      }
+    }
+  }
+}
