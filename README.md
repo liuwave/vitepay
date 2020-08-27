@@ -46,8 +46,8 @@
 
 网关 | Composer包 | 简介 | 作者
 --- | --- | ------ | --- |
-wechat|vitepay/wechat|微信支付|liuwave|
-alipay|vitepay/alipay|支付宝支付|liuwave|
+[wechat](https://github.com/liuwave/vitepay-wechat)|vitepay/wechat|微信支付|liuwave|
+[alipay](https://github.com/liuwave/vitepay-alipay)|vitepay/alipay|支付宝支付|liuwave|
 
 
 
