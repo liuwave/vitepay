@@ -1,4 +1,5 @@
 <?php
+
 namespace vitepay;
 
 use InvalidArgumentException;
@@ -105,7 +106,6 @@ class Payment extends Manager
         
         $type = $this->getGatewayConfig($channel, $gateway, 'type', '');
         
-
         if (false === strpos($type, '\\')) {
             if ($gateway) {
                 return $this->namespace.$channel.'\\gateway\\'.Str::studly($type);
@@ -114,7 +114,6 @@ class Payment extends Manager
                 return $this->namespace.$channel.'\\'.Str::studly($type ? : 'BaseGateway');
             }
         }
-        
         
         return $type;
     }
@@ -128,7 +127,7 @@ class Payment extends Manager
     {
         [$channel, $gateway] = explode('_', $name, 2);
         
-        return $this->getGatewayConfig($channel, $gateway,  'credentials');
+        return $this->getGatewayConfig($channel, $gateway, 'credentials');
     }
     
     /**
@@ -138,18 +137,23 @@ class Payment extends Manager
      */
     protected function createDriver(string $name)
     {
-        /** @var \vitepay\core\Gateway $gateway */
-        $gateway = parent::createDriver($name);
-        $gateway->setName($name);
+        //每个支付网关单独设置调试模式
+        [$channel, $gateway] = explode('_', $name, 2);
+        
+        /** @var \vitepay\core\Gateway $Gateway */
+        $Gateway = parent::createDriver($name);
+        $Gateway->setName($name);
         
         $notifyUrl = $this->getConfig('notify_url') ? : url('PAY_NOTIFY', ['gateway' => $name])->domain(true);
-        $gateway->setNotifyUrl((string)$notifyUrl);
-    
-        if ($this->getConfig('sandbox')) {
-            $gateway->setSandbox();
-        }
+        $Gateway->setNotifyUrl((string)$notifyUrl);
         
-        $gateway->setChargeResolver(
+      
+        
+        if ($this->getGatewayConfig($channel, $gateway, 'sandbox')) {
+            $Gateway->setSandbox();
+        }
+    
+        $Gateway->setChargeResolver(
           function ($tradeNo) {
               /** @var Payable $charge */
               $charge = $this->getConfig('charge');
@@ -158,7 +162,7 @@ class Payment extends Manager
           }
         );
         
-        return $gateway;
+        return $Gateway;
     }
     
     /**
