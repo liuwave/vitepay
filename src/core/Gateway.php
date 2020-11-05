@@ -45,6 +45,10 @@ abstract class Gateway
      * @var bool
      */
     protected $sandbox = false;
+    /**
+     * @var bool
+     */
+    protected $log = false;
     
     /**
      * @var
@@ -119,6 +123,18 @@ abstract class Gateway
         $this->notifyUrl = $notifyUrl;
         
         return $this;
+    }
+    
+    public function setLog(bool $log = true)
+    {
+        $this->log = $log;
+        
+        return $this;
+    }
+    
+    public function isLog()
+    {
+        return $this->log;
     }
     
     /**

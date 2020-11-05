@@ -53,31 +53,30 @@ class Payment extends Manager
      *
      * @return mixed
      */
-    public function getGatewayConfig(string $channel, ?string $gateway = '', $name = null, $default = null)
+    public function getGatewayConfig(string $channel, string $gateway, $name = null, $default = null)
     {
-        /*全部配置*/
-        $config = $this->getChannelConfig($channel);
+        $channelConfig = $this->getChannelConfig($channel);
         
-        if (empty($config[ 'credentials' ])) {
+        $gateways = Arr::get($channelConfig, 'gateways');
+        $credentials = Arr::get($channelConfig, 'credentials');
+        
+        if (empty($credentials)) {
             throw new InvalidArgumentException("Channel [{$channel}] credentials option not found");
         }
         //指定网关的配置
-        if ($gateway) {
-            $gatewayConfig = Arr::get($config, "gateways.{$gateway}");
+        if (!empty($gateways[ $gateway ])) {
+            $config = $gateways[ $gateway ];
             
-            if ($gatewayConfig) {
-                $credentials = (isset($gatewayConfig[ 'credentials' ]) && is_array($gatewayConfig[ 'credentials' ]))
-                  ? array_filter($gatewayConfig[ 'credentials' ]) : [];
-                
-                $gatewayConfig[ 'credentials' ] = array_replace($config[ 'credentials' ], $credentials);
-                
-                $config = array_merge($config, $gatewayConfig);
+            if (!empty($config[ 'credentials' ])) {
+                $config[ 'credentials' ] = array_replace(
+                  $credentials,
+                  array_filter((array)$config[ 'credentials' ])
+                );
             }
+            $channelConfig = array_merge($channelConfig, $config);
         }
         
-        Arr::forget($config, 'gateways');
-        
-        return Arr::get($config, $name);
+        return Arr::get($channelConfig, $name);
     }
     
     /**
@@ -144,15 +143,23 @@ class Payment extends Manager
         $Gateway = parent::createDriver($name);
         $Gateway->setName($name);
         
-        $notifyUrl = $this->getConfig('notify_url') ? : url('PAY_NOTIFY', ['gateway' => $name])->domain(true);
-        $Gateway->setNotifyUrl((string)$notifyUrl);
+        $notifyUrl = $this->getGatewayConfig($channel, $gateway, 'notify_url')
+          ? : ($this->getConfig('notify_url')
+            ? : url(
+              'PAY_NOTIFY',
+              ['gateway' => $name]
+            )->domain(true));
         
-      
+        $Gateway->setNotifyUrl((string)$notifyUrl);
         
         if ($this->getGatewayConfig($channel, $gateway, 'sandbox')) {
             $Gateway->setSandbox();
         }
-    
+        
+        if ($this->getGatewayConfig($channel, $gateway, 'log', false)) {
+            $Gateway->setLog(true);
+        }
+        
         $Gateway->setChargeResolver(
           function ($tradeNo) {
               /** @var Payable $charge */
